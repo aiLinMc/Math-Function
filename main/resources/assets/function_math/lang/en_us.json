@@ -1,0 +1,12 @@
+{
+  "function_math.result.success": "§aFunction image generated successfully!",
+  "function_math.result.expression": "§eExpression: §f%s",
+  "function_math.result.block": "§eBlock: §f%s",
+  "function_math.result.duration": "§eTime taken: §f%d ms",
+  "function_math.result.origin": "§eOrigin: §f(%s, %s, %s)",
+  "function_math.error.no_player": "§cCommand must be executed by a player",
+  "function_math.error.no_world": "§cCannot get world",
+  "function_math.error.parse_failed": "§cExpression parsing failed: %s",
+  "function_math.error.invalid_expression": "§cInvalid expression",
+  "function_math.error.no_valid_points": "§cNo valid function values, cannot generate image"
+}

@@ -1,0 +1,12 @@
+{
+  "function_math.result.success": "§a函数图像生成完成！",
+  "function_math.result.expression": "§e表达式: §f%s",
+  "function_math.result.block": "§e方块: §f%s",
+  "function_math.result.duration": "§e耗时: §f%d ms",
+  "function_math.result.origin": "§e原点坐标: §f(%s, %s, %s)",
+  "function_math.error.no_player": "§c命令必须由玩家执行",
+  "function_math.error.no_world": "§c无法获取世界",
+  "function_math.error.parse_failed": "§c表达式解析失败: %s",
+  "function_math.error.invalid_expression": "§c表达式无效",
+  "function_math.error.no_valid_points": "§c没有有效的函数值，无法生成图像"
+}
