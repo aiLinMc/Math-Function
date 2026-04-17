@@ -4,7 +4,7 @@ license="GNU General Public License version 3 (GPLv3)"
 
 [[mods]]
 modId="function_math"
-version="1.0"
+version="2.0"
 displayName="Function Math"
 displayURL="https://space.bilibili.com/3493284076849745"
 credits="Created using mod maker MCreator - https://mcreator.net/about"
@@ -31,6 +31,8 @@ description="Maths! Function!"
 
 
 
+[[mixins]]
+    config = "function_math.mixins.json"
 
 # Start of user code block custom mixins
 # End of user code block custom mixins

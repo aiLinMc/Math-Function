@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Collection;
 import java.util.ArrayList;
 
+import com.ailinmc.function_math.event.MathFunctionEnchantmentHandler;
+
 @Mod("function_math")
 public class FunctionMathMod {
 	public static final Logger LOGGER = LogManager.getLogger(FunctionMathMod.class);
@@ -35,8 +37,8 @@ public class FunctionMathMod {
 		// End of user code block mod constructor
 		NeoForge.EVENT_BUS.register(this);
 		modEventBus.addListener(this::registerNetworking);
-
 		// Start of user code block mod init
+		MathFunctionEnchantmentHandler.init(modEventBus);
 		// End of user code block mod init
 	}
 
