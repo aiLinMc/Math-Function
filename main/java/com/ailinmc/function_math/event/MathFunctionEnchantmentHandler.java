@@ -54,6 +54,9 @@ public class MathFunctionEnchantmentHandler {
     private static final double TRAJECTORY_SCALE = 1.0;
 
     private static Method getPickupItemMethod = null;
+    // 反射调用 FireworkRocketEntity 私有方法 dealExplosionDamage()，
+    // 完整复现原版爆炸的范围伤害逻辑。
+    private static Method dealExplosionDamageMethod = null;
 
     static {
         try {
@@ -67,10 +70,60 @@ public class MathFunctionEnchantmentHandler {
                 com.ailinmc.function_math.FunctionMathMod.LOGGER.error("无法找到获取箭物品的方法", ex);
             }
         }
+
+        // 反射获取 dealExplosionDamage()：原版 explode() 的伤害子方法，private void，无参数
+        try {
+            dealExplosionDamageMethod = FireworkRocketEntity.class.getDeclaredMethod("dealExplosionDamage");
+            dealExplosionDamageMethod.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            com.ailinmc.function_math.FunctionMathMod.LOGGER.error("无法找到 FireworkRocketEntity.dealExplosionDamage()，碰撞爆炸将无范围伤害", e);
+        }
+    }
+
+    /**
+     * 将烟花火箭移动到指定位置后立即引爆，完整复现原版 explode() 的逻辑：
+     *   1. broadcastEntityEvent(17)  — 触发客户端爆炸粒子 + 声音
+     *   2. dealExplosionDamage()     — 计算并施加范围伤害（反射调用）
+     *   3. gameEvent(EXPLODE)        — 触发侦测器 / Sculk 传感器
+     *   4. discard()                 — 删除实体
+     */
+    private void explodeRocket(FireworkRocketEntity rocket, Vec3 explosionPos) {
+        if (rocket.isRemoved()) return;
+
+        // 移到碰撞点，确保爆炸粒子和伤害范围的位置正确
+        rocket.setPos(explosionPos.x, explosionPos.y, explosionPos.z);
+
+        // 触发客户端爆炸粒子 + 声音（byte 17 = 烟花爆炸事件，见 handleEntityEvent）
+        rocket.level().broadcastEntityEvent(rocket, (byte) 17);
+
+        // 施加范围伤害（原版 dealExplosionDamage：
+        //   根据 Fireworks 组件的爆炸列表计算基础伤害 5 + 爆炸数*2，
+        //   对半径 5 格内有视线的 LivingEntity 造成按距离衰减的伤害）
+        if (dealExplosionDamageMethod != null) {
+            try {
+                dealExplosionDamageMethod.invoke(rocket);
+            } catch (Exception e) {
+                com.ailinmc.function_math.FunctionMathMod.LOGGER.error("调用 dealExplosionDamage() 失败", e);
+            }
+        }
+
+        // 触发游戏事件（侦测器、Sculk 传感器等）
+        rocket.gameEvent(net.minecraft.world.level.gameevent.GameEvent.EXPLODE, rocket.getOwner());
+
+        // 删除实体
+        rocket.discard();
     }
 
     public static void init(IEventBus modEventBus) {
         NeoForge.EVENT_BUS.register(new MathFunctionEnchantmentHandler());
+    }
+
+    /**
+     * 供 Mixin 查询：该烟花火箭是否处于函数轨迹控制中。
+     * Mixin 在 tick() 内部调用，必须是静态方法以避免类加载循环。
+     */
+    public static boolean isFunctionRocket(FireworkRocketEntity rocket) {
+        return rocketDataMap.containsKey(rocket);
     }
 
     private boolean hasMathFunctionEnchantment(ItemStack stack) {
@@ -212,9 +265,10 @@ public class MathFunctionEnchantmentHandler {
                 if (expression.isEmpty() || !isExpressionValid(expression)) return;
             }
 
-            // 禁用重力和初速度
+            // 禁用重力和初速度，并持续压制原版烟花推进逻辑
             rocket.setNoGravity(true);
             rocket.setDeltaMovement(Vec3.ZERO);
+            rocket.hasImpulse = false;
 
             // 计算水平方向（同箭矢）
             float yaw = shooter.getYRot();
@@ -341,7 +395,11 @@ public class MathFunctionEnchantmentHandler {
             }
 
             if (updateRocketMovement(rocket, data)) {
-                rocket.discard();
+                // 碰撞爆炸时 explodeRocket() 内部已经 discard()，此处 isAlive() 为 false，
+                // 重复调用 discard() 无副作用；超时/表达式错误等情况则由此处负责清理。
+                if (rocket.isAlive()) {
+                    rocket.discard();
+                }
                 rocketIterator.remove();
                 continue;
             }
@@ -661,6 +719,11 @@ public class MathFunctionEnchantmentHandler {
 
     // ---------- 烟花火箭运动更新 ----------
     private boolean updateRocketMovement(FireworkRocketEntity rocket, RocketData data) {
+        // 每 tick 首先强制清零速度，压制原版烟花推进逻辑（原版在自己的 tick() 里会累加向上速度）
+        // 必须在位置计算前清零，否则原版物理会在我们 setPos 之前先移动实体，造成抖动
+        rocket.setDeltaMovement(Vec3.ZERO);
+        rocket.setNoGravity(true);
+
         if (data.firstTick) {
             data.firstTick = false;
             data.projectedDistance = 0.0;
@@ -685,6 +748,8 @@ public class MathFunctionEnchantmentHandler {
                     rocket.setYRot(yaw0);
                     rocket.setXRot(pitch0);
                 }
+                // setPos 之后再次清零，防止本帧剩余逻辑还有速度残留
+                rocket.setDeltaMovement(Vec3.ZERO);
             } catch (Exception e) {
                 com.ailinmc.function_math.FunctionMathMod.LOGGER.error("火箭计算起始位置失败", e);
                 return true;
@@ -716,21 +781,22 @@ public class MathFunctionEnchantmentHandler {
             Vec3 tangentVelocity = new Vec3(tanX, tanY, tanZ);
 
             if (hasSolidCollisionBetween(rocket, data.lastPos, newPos)) {
-                rocket.setNoGravity(false);
-                rocket.setDeltaMovement(tangentVelocity);
-                rocket.hasImpulse = true;
+                // 碰到方块：在碰撞点爆炸，与原版 onHitBlock 行为一致
+                explodeRocket(rocket, newPos);
                 return true;
             }
 
             Entity hitEntity = getEntityHit(rocket, data.lastPos, newPos);
             if (hitEntity != null) {
-                rocket.setNoGravity(false);
-                rocket.setDeltaMovement(tangentVelocity);
-                rocket.hasImpulse = true;
+                // 碰到实体：在实体位置爆炸，与原版 onHitEntity 行为一致
+                explodeRocket(rocket, hitEntity.position());
                 return true;
             }
 
             rocket.setPos(targetX, targetY, targetZ);
+            // setPos 之后立即再次清零速度：原版 FireworkRocketEntity.tick() 在同一帧内可能还有后续逻辑，
+            // 如果此时速度不为零，下一帧开始时实体会被原版逻辑再移动一次，产生"飞起来又被拉回"的抖动。
+            rocket.setDeltaMovement(Vec3.ZERO);
 
             double horizMag = Math.sqrt(tanX * tanX + tanZ * tanZ);
             if (horizMag > 1e-8 || Math.abs(tanY) > 1e-8) {
@@ -741,6 +807,8 @@ public class MathFunctionEnchantmentHandler {
             }
 
             data.lastPos = newPos;
+            // 不设置 hasImpulse = true：hasImpulse 会触发原版网络同步中的速度广播，
+            // 导致客户端根据速度向量再做一次位移预测，与我们直接 setPos 的结果冲突，加剧抖动。
         } catch (Exception e) {
             com.ailinmc.function_math.FunctionMathMod.LOGGER.error("火箭表达式计算错误", e);
             return true;
