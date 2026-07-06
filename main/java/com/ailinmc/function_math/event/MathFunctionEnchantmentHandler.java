@@ -423,6 +423,7 @@ public class MathFunctionEnchantmentHandler {
     }
 
     private boolean updateProjectileMovement(Projectile projectile, ProjectileData data) {
+        projectile.setNoGravity(true);
         if (data.firstTick) {
             data.firstTick = false;
             data.projectedDistance = 0.0;
