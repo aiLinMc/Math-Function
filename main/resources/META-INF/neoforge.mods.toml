@@ -4,10 +4,10 @@ license="GNU General Public License version 3 (GPLv3)"
 
 [[mods]]
 modId="function_math"
-version="2.4"
+version="2.5"
 displayName="Function Math"
 displayURL="https://space.bilibili.com/3493284076849745"
-credits="Created using mod maker MCreator( https://mcreator.net/about ), and a little codes were written by TRAE AI."
+credits="Some were created by mod maker MCreator( https://mcreator.net/about ), and a little codes were written by TRAE AI."
 authors="aiLinMc"
 description="Maths! Function!"
 

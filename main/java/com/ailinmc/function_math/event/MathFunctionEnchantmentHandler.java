@@ -82,23 +82,14 @@ public class MathFunctionEnchantmentHandler {
 
     /**
      * 将烟花火箭移动到指定位置后立即引爆，完整复现原版 explode() 的逻辑：
-     *   1. broadcastEntityEvent(17)  — 触发客户端爆炸粒子 + 声音
-     *   2. dealExplosionDamage()     — 计算并施加范围伤害（反射调用）
-     *   3. gameEvent(EXPLODE)        — 触发侦测器 / Sculk 传感器
-     *   4. discard()                 — 删除实体
      */
     private void explodeRocket(FireworkRocketEntity rocket, Vec3 explosionPos) {
         if (rocket.isRemoved()) return;
 
-        // 移到碰撞点，确保爆炸粒子和伤害范围的位置正确
         rocket.setPos(explosionPos.x, explosionPos.y, explosionPos.z);
-
-        // 触发客户端爆炸粒子 + 声音（byte 17 = 烟花爆炸事件，见 handleEntityEvent）
         rocket.level().broadcastEntityEvent(rocket, (byte) 17);
 
         // 施加范围伤害（原版 dealExplosionDamage：
-        //   根据 Fireworks 组件的爆炸列表计算基础伤害 5 + 爆炸数*2，
-        //   对半径 5 格内有视线的 LivingEntity 造成按距离衰减的伤害）
         if (dealExplosionDamageMethod != null) {
             try {
                 dealExplosionDamageMethod.invoke(rocket);
