@@ -3,20 +3,20 @@
     "translate": "enchantment.function_math.math_function"
   },
   "supported_items": [
-    "minecraft:bow",
-    "minecraft:crossbow",
     "minecraft:flint_and_steel",
     "minecraft:snowball",
     "minecraft:egg",
-    "minecraft:fishing_rod",
     "minecraft:splash_potion",
     "minecraft:lingering_potion",
     "minecraft:trident",
     "minecraft:ender_pearl",
-    "minecraft:firework_rocket"
+    "minecraft:firework_rocket",
+    "minecraft:arrow",
+    "minecraft:spectral_arrow",
+    "minecraft:tipped_arrow"
   ],
   "weight": 4,
-  "max_level": 1,
+  "max_level": 2,
   "min_cost": {
     "base": 1,
     "per_level_above_first": 10

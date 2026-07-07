@@ -29,6 +29,7 @@ import com.ailinmc.function_math.network.StopTridentFlightPayload;
 import com.ailinmc.function_math.event.TridentSpinAttackHandler;
 import com.ailinmc.function_math.event.TridentFlightKeyHandler;
 import com.ailinmc.function_math.event.MathFunctionEnchantmentHandler;
+import com.ailinmc.function_math.event.AnvilHandler;
 
 @Mod("function_math")
 public class FunctionMathMod {
@@ -44,6 +45,7 @@ public class FunctionMathMod {
 		MathFunctionEnchantmentHandler.init(modEventBus);
 		TridentSpinAttackHandler.init(modEventBus);
 		TridentFlightKeyHandler.initClient(modEventBus);
+		AnvilHandler.init();
 		addNetworkMessage(StopTridentFlightPayload.TYPE, StopTridentFlightPayload.CODEC, (payload, context) -> {
 			context.enqueueWork(() -> {
 				TridentSpinAttackHandler.handleStopFlightMessage(context);
