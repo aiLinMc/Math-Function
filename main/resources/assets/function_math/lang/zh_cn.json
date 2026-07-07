@@ -9,5 +9,6 @@
   "function_math.error.parse_failed": "§c表达式解析失败: %s",
   "function_math.error.invalid_expression": "§c表达式无效",
   "function_math.error.no_valid_points": "§c没有有效的函数值，无法生成图像",
-  "enchantment.function_math.math_function": "函数"
+  "enchantment.function_math.math_function": "函数",
+  "function_math.trident.stop_action": "按 跳跃键 停止飞行"
 }

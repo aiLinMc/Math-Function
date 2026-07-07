@@ -9,5 +9,6 @@
   "function_math.error.parse_failed": "§cExpression parsing failed: %s",
   "function_math.error.invalid_expression": "§cInvalid expression",
   "function_math.error.no_valid_points": "§cNo valid function values, cannot generate image",
-  "enchantment.function_math.math_function": "Math Function"
+  "enchantment.function_math.math_function": "Math Function",
+  "function_math.trident.stop_action": "Press Jump Key to stop flying"
 }

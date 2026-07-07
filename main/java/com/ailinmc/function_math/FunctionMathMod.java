@@ -25,6 +25,9 @@ import java.util.HashMap;
 import java.util.Collection;
 import java.util.ArrayList;
 
+import com.ailinmc.function_math.network.StopTridentFlightPayload;
+import com.ailinmc.function_math.event.TridentSpinAttackHandler;
+import com.ailinmc.function_math.event.TridentFlightKeyHandler;
 import com.ailinmc.function_math.event.MathFunctionEnchantmentHandler;
 
 @Mod("function_math")
@@ -39,6 +42,13 @@ public class FunctionMathMod {
 		modEventBus.addListener(this::registerNetworking);
 		// Start of user code block mod init
 		MathFunctionEnchantmentHandler.init(modEventBus);
+		TridentSpinAttackHandler.init(modEventBus);
+		TridentFlightKeyHandler.initClient(modEventBus);
+		addNetworkMessage(StopTridentFlightPayload.TYPE, StopTridentFlightPayload.CODEC, (payload, context) -> {
+			context.enqueueWork(() -> {
+				TridentSpinAttackHandler.handleStopFlightMessage(context);
+			});
+		});
 		// End of user code block mod init
 	}
 
