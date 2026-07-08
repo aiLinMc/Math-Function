@@ -282,21 +282,25 @@ public class MathFunctionEnchantmentHandler {
 
     private boolean isExpressionValid(String expression) {
         try {
-            double testY0 = ExpressionEvaluator.evaluate(expression, 0);
-            double testY1 = ExpressionEvaluator.evaluate(expression, 1);
-            if (Double.isNaN(testY0) || Double.isInfinite(testY0)) {
-                com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("表达式在x=0处产生无效值: " + expression);
-                return false;
-            }
-            if (Double.isNaN(testY1) || Double.isInfinite(testY1)) {
-                com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("表达式在x=1处产生无效值: " + expression);
-                return false;
-            }
+            // 只检查表达式能否解析，不检查特定 x 值是否有效
+            // 起始位置的无效值会在 firstTick 中自动跳过
+            ExpressionEvaluator.parse(expression);
             return true;
         } catch (Exception e) {
             com.ailinmc.function_math.FunctionMathMod.LOGGER.error("表达式解析错误: " + expression, e);
             return false;
         }
+    }
+
+    /** 在 0~maxRange 中寻找第一个使表达式产生有效值的 x */
+    private double findValidStartX(String expression, double maxRange) {
+        for (double x = 0; x <= maxRange; x += 0.5) {
+            double val = ExpressionEvaluator.evaluate(expression, x);
+            if (!Double.isNaN(val) && !Double.isInfinite(val)) {
+                return x;
+            }
+        }
+        return -1; // 找不到有效值
     }
 
     @SubscribeEvent
@@ -417,9 +421,15 @@ public class MathFunctionEnchantmentHandler {
         projectile.setNoGravity(true);
         if (data.firstTick) {
             data.firstTick = false;
-            data.projectedDistance = 0.0;
+            // 寻找有效的起始 x 值
+            double startX = findValidStartX(data.expression, 10.0);
+            if (startX < 0) {
+                com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("无法找到有效的起始x值: " + data.expression);
+                return true;
+            }
+            data.projectedDistance = startX * TRAJECTORY_SCALE;
             try {
-                double f0 = ExpressionEvaluator.evaluate(data.expression, 0.0);
+                double f0 = ExpressionEvaluator.evaluate(data.expression, startX);
                 double targetY = data.origin.y + f0;
                 targetY = Math.min(MAX_Y, Math.max(MIN_Y, targetY));
                 double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
@@ -427,7 +437,7 @@ public class MathFunctionEnchantmentHandler {
                 Vec3 target = new Vec3(targetX, targetY, targetZ);
                 projectile.setPos(target.x, target.y, target.z);
                 data.lastPos = target;
-                double slope0 = derivative(data.expression, 0.0) / TRAJECTORY_SCALE;
+                double slope0 = derivative(data.expression, startX) / TRAJECTORY_SCALE;
                 double tanX0 = data.lookVector.x * HORIZONTAL_SPEED;
                 double tanY0 = slope0 * HORIZONTAL_SPEED;
                 double tanZ0 = data.lookVector.z * HORIZONTAL_SPEED;
@@ -451,8 +461,8 @@ public class MathFunctionEnchantmentHandler {
         try {
             double rawY = ExpressionEvaluator.evaluate(data.expression, xMath);
             if (Double.isNaN(rawY) || Double.isInfinite(rawY)) {
-                com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("表达式在x=" + xMath + "处无效");
-                return true;
+                // 跳过无效值，继续轨迹
+                return false;
             }
 
             double targetY = data.origin.y + rawY;
@@ -503,9 +513,14 @@ public class MathFunctionEnchantmentHandler {
     private boolean updateTNTMovement(PrimedTnt tnt, TNTData data) {
         if (data.firstTick) {
             data.firstTick = false;
-            data.projectedDistance = 0.0;
+            double startX = findValidStartX(data.expression, 10.0);
+            if (startX < 0) {
+                com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("TNT 无法找到有效的起始x值: " + data.expression);
+                return true;
+            }
+            data.projectedDistance = startX * TRAJECTORY_SCALE;
             try {
-                double f0 = ExpressionEvaluator.evaluate(data.expression, 0.0);
+                double f0 = ExpressionEvaluator.evaluate(data.expression, startX);
                 double targetY = data.origin.y + f0;
                 targetY = Math.min(MAX_Y, Math.max(MIN_Y, targetY));
                 double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
@@ -513,8 +528,7 @@ public class MathFunctionEnchantmentHandler {
                 Vec3 target = new Vec3(targetX, targetY, targetZ);
                 tnt.setPos(target.x, target.y, target.z);
                 data.lastPos = target;
-                // 用 x=0 处的切线斜率初始化朝向
-                double slope0 = derivative(data.expression, 0.0) / TRAJECTORY_SCALE;
+                double slope0 = derivative(data.expression, startX) / TRAJECTORY_SCALE;
                 double tanX0 = data.lookVector.x * HORIZONTAL_SPEED;
                 double tanY0 = slope0 * HORIZONTAL_SPEED;
                 double tanZ0 = data.lookVector.z * HORIZONTAL_SPEED;
@@ -538,8 +552,7 @@ public class MathFunctionEnchantmentHandler {
         try {
             double rawY = ExpressionEvaluator.evaluate(data.expression, xMath);
             if (Double.isNaN(rawY) || Double.isInfinite(rawY)) {
-                com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("TNT 表达式在x=" + xMath + "处无效");
-                return true;
+                return false;
             }
 
             double targetY = data.origin.y + rawY;
@@ -718,9 +731,14 @@ public class MathFunctionEnchantmentHandler {
 
         if (data.firstTick) {
             data.firstTick = false;
-            data.projectedDistance = 0.0;
+            double startX = findValidStartX(data.expression, 10.0);
+            if (startX < 0) {
+                com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("火箭无法找到有效的起始x值: " + data.expression);
+                return true;
+            }
+            data.projectedDistance = startX * TRAJECTORY_SCALE;
             try {
-                double f0 = ExpressionEvaluator.evaluate(data.expression, 0.0);
+                double f0 = ExpressionEvaluator.evaluate(data.expression, startX);
                 double targetY = data.origin.y + f0;
                 targetY = Math.min(MAX_Y, Math.max(MIN_Y, targetY));
                 double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
@@ -728,8 +746,7 @@ public class MathFunctionEnchantmentHandler {
                 Vec3 target = new Vec3(targetX, targetY, targetZ);
                 rocket.setPos(target.x, target.y, target.z);
                 data.lastPos = target;
-                // 用 x=0 处的切线斜率初始化朝向
-                double slope0 = derivative(data.expression, 0.0) / TRAJECTORY_SCALE;
+                double slope0 = derivative(data.expression, startX) / TRAJECTORY_SCALE;
                 double tanX0 = data.lookVector.x * HORIZONTAL_SPEED;
                 double tanY0 = slope0 * HORIZONTAL_SPEED;
                 double tanZ0 = data.lookVector.z * HORIZONTAL_SPEED;
@@ -740,7 +757,6 @@ public class MathFunctionEnchantmentHandler {
                     rocket.setYRot(yaw0);
                     rocket.setXRot(pitch0);
                 }
-                // setPos 之后再次清零，防止本帧剩余逻辑还有速度残留
                 rocket.setDeltaMovement(Vec3.ZERO);
             } catch (Exception e) {
                 com.ailinmc.function_math.FunctionMathMod.LOGGER.error("火箭计算起始位置失败", e);
@@ -755,8 +771,7 @@ public class MathFunctionEnchantmentHandler {
         try {
             double rawY = ExpressionEvaluator.evaluate(data.expression, xMath);
             if (Double.isNaN(rawY) || Double.isInfinite(rawY)) {
-                com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("火箭表达式在x=" + xMath + "处无效");
-                return true;
+                return false;
             }
 
             double targetY = data.origin.y + rawY;

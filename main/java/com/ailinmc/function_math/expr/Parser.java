@@ -72,6 +72,13 @@ public class Parser {
             pos++;
             expect(TokenType.LPAREN);
             AstNode arg = parseExpression();
+            // 支持双参数函数，如 log(base, value)
+            if (pos < tokens.size() && tokens.get(pos).type == TokenType.COMMA) {
+                pos++;
+                AstNode arg2 = parseExpression();
+                expect(TokenType.RPAREN);
+                return new FunctionNode(funcName, arg, arg2);
+            }
             expect(TokenType.RPAREN);
             return new FunctionNode(funcName, arg);
         } else if (token.type == TokenType.LPAREN) {

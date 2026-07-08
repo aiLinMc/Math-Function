@@ -55,6 +55,20 @@ public class Lexer {
             pos++;
         }
         String id = input.substring(start, pos);
+        // 处理 logN 格式（如 log2, log10）
+        // 如果标识符以 log 开头且超过3个字符（如 logx），回退到 log，只读数字
+        if (id.startsWith("log") && id.length() > 3) {
+            pos = start + 3; // 回退到 log 之后
+            while (pos < input.length() && Character.isDigit(input.charAt(pos))) {
+                pos++;
+            }
+            id = input.substring(start, pos);
+        } else if (id.equals("log")) {
+            while (pos < input.length() && Character.isDigit(input.charAt(pos))) {
+                pos++;
+            }
+            id = input.substring(start, pos);
+        }
         if (id.equals("x")) {
             return new Token(TokenType.VARIABLE, id);
         } else if (isFunction(id)) {
@@ -65,7 +79,20 @@ public class Lexer {
     }
 
     private boolean isFunction(String name) {
-        return name.equals("sin") || name.equals("cos") || name.equals("tan") ||
-               name.equals("sqrt") || name.equals("log") || name.equals("ln");
+        if (name.equals("sin") || name.equals("cos") || name.equals("tan") ||
+            name.equals("sqrt") || name.equals("ln") || name.equals("exp") || name.equals("abs")) {
+            return true;
+        }
+        // log 或 logN（如 log2, log10）
+        if (name.equals("log")) return true;
+        if (name.startsWith("log")) {
+            try {
+                Integer.parseInt(name.substring(3));
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return false;
     }
 }

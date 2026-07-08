@@ -19,12 +19,15 @@ Math Function is a **Minecraft NeoForge mod** that transforms mathematical expre
 **2. Function Enchantment** – Apply custom mathematical trajectories to weapons and tools, turning arrows, TNT, fireworks, and even your own flight into controllable function curves!
 
 ### Supported Functions
-- Basic arithmetic: `+ - * /`
-- Power: `^` (e.g. `x^2`)
-- Trigonometry: `sin(x)`, `cos(x)`, `tan(x)`
-- Logarithms: `log(x)`, `ln(x)`
-- Square root: `sqrt(x)`
-- Constants and nesting: `3*x^2 + sin(2*x)`
+| Category | Functions |
+|----------|-----------|
+| Basic Arithmetic | `+` `-` `*` `/` |
+| Power | `^` (e.g. `x^2`) |
+| Trigonometry | `sin(x)` `cos(x)` `tan(x)` |
+| Logarithms | `log(x)` `ln(x)` `log(base, value)` `log2` `log10` |
+| Roots | `sqrt(x)` `sqrt(root, value)` (e.g. `sqrt(3, 27)` = cube root) |
+| Other | `abs(x)` `exp(x)` |
+| Nesting | `3*x^2 + sin(2*x)` |
 
 ---
 
@@ -141,12 +144,15 @@ See the [LICENSE](https://github.com/aiLinMc/Math-Function/blob/main/LICENSE) fi
 **2. 函数附魔** – 为武器和工具赋予数学轨迹，让箭矢、TNT、烟花火箭甚至你自身的飞行都变成可控的函数曲线！
 
 ### 支持的函数
-- 基础运算：`+ - * /`
-- 幂运算：`^`（如 `x^2`）
-- 三角函数：`sin(x)`、`cos(x)`、`tan(x)`
-- 对数：`log(x)`、`ln(x)`
-- 平方根：`sqrt(x)`
-- 常数与嵌套：`3*x^2 + sin(2*x)`
+| 类别 | 函数 |
+|------|------|
+| 基础运算 | `+` `-` `*` `/` |
+| 幂运算 | `^`（如 `x^2`） |
+| 三角函数 | `sin(x)` `cos(x)` `tan(x)` |
+| 对数 | `log(x)` `ln(x)` `log(底数, 真数)` `log2` `log10` |
+| 根号 | `sqrt(x)` `sqrt(根指数, 被开方数)`（如 `sqrt(3, 27)` = 27 的立方根） |
+| 其他 | `abs(x)` `exp(x)` |
+| 嵌套 | `3*x^2 + sin(2*x)` |
 
 ---
 
