@@ -19,32 +19,60 @@ public class FunctionNode extends AstNode {
 
     @Override
     public double evaluate(double x) {
-        double a = arg.evaluate(x);
         switch (func) {
-            case "sin": return Math.sin(a);
-            case "cos": return Math.cos(a);
-            case "tan": return Math.tan(a);
+            case "Ran#":
+                return Math.random();
+            case "RanInt":
+                if (arg2 != null) {
+                    double min = arg.evaluate(x);
+                    double max = arg2.evaluate(x);
+                    double lower = Math.min(min, max);
+                    double upper = Math.max(min, max);
+                    return (int) (lower + Math.random() * (upper - lower + 1));
+                }
+                return Double.NaN;
+            case "sin": return Math.sin(arg.evaluate(x));
+            case "cos": return Math.cos(arg.evaluate(x));
+            case "tan": return Math.tan(arg.evaluate(x));
             case "sqrt":
                 if (arg2 != null) {
-                    // sqrt(root, value): 求 value 的 root 次方根
-                    double root = a;
+                    double root = arg.evaluate(x);
                     double value = arg2.evaluate(x);
                     return Math.pow(value, 1.0 / root);
                 }
-                return Math.sqrt(a);
-            case "ln": return Math.log(a);
-            case "exp": return Math.exp(a);
-            case "abs": return Math.abs(a);
+                return Math.sqrt(arg.evaluate(x));
+            case "ln": return Math.log(arg.evaluate(x));
+            case "exp": return Math.exp(arg.evaluate(x));
+            case "abs": return Math.abs(arg.evaluate(x));
+            case "floor": return Math.floor(arg.evaluate(x));
+            case "ceil": return Math.ceil(arg.evaluate(x));
+            case "round": return Math.round(arg.evaluate(x));
+            case "trunc": return Math.floor(arg.evaluate(x) >= 0 ? arg.evaluate(x) : -Math.floor(-arg.evaluate(x)));
+            case "mod":
+                if (arg2 != null) {
+                    return arg.evaluate(x) % arg2.evaluate(x);
+                }
+                return Double.NaN;
+            case "min":
+                if (arg2 != null) {
+                    return Math.min(arg.evaluate(x), arg2.evaluate(x));
+                }
+                return Double.NaN;
+            case "max":
+                if (arg2 != null) {
+                    return Math.max(arg.evaluate(x), arg2.evaluate(x));
+                }
+                return Double.NaN;
             case "log":
                 if (arg2 != null) {
-                    // log(base, value): 以第一个参数为底，对第二个参数取对数
-                    double base = a;
+                    double base = arg.evaluate(x);
                     double value = arg2.evaluate(x);
                     return Math.log(value) / Math.log(base);
                 }
-                return Math.log10(a);
+                return Math.log10(arg.evaluate(x));
             default:
                 if (func.startsWith("log")) {
+                    double a = arg.evaluate(x);
                     int base = Integer.parseInt(func.substring(3));
                     return Math.log(a) / Math.log(base);
                 }

@@ -23,10 +23,14 @@ Math Function is a **Minecraft NeoForge mod** that transforms mathematical expre
 |----------|-----------|
 | Basic Arithmetic | `+` `-` `*` `/` |
 | Power | `^` (e.g. `x^2`) |
+| Unary Operator | `-x` (negative numbers) |
 | Trigonometry | `sin(x)` `cos(x)` `tan(x)` |
 | Logarithms | `log(x)` `ln(x)` `log(base, value)` `log2` `log10` |
 | Roots | `sqrt(x)` `sqrt(root, value)` (e.g. `sqrt(3, 27)` = cube root) |
-| Other | `abs(x)` `exp(x)` |
+| Rounding | `floor(x)` (round down), `ceil(x)` (round up), `round(x)` (round to nearest), `trunc(x)` (remove decimal) |
+| Other | `abs(x)` `exp(x)` `min(a, b)` `max(a, b)` `mod(a, b)` |
+| Random | `Ran#` (0~1) `RanInt(min, max)` |
+| Constants | `e` `pi` |
 | Nesting | `3*x^2 + sin(2*x)` |
 
 ---
@@ -148,10 +152,14 @@ See the [LICENSE](https://github.com/aiLinMc/Math-Function/blob/main/LICENSE) fi
 |------|------|
 | 基础运算 | `+` `-` `*` `/` |
 | 幂运算 | `^`（如 `x^2`） |
+| 一元负号 | `-x`（负数） |
 | 三角函数 | `sin(x)` `cos(x)` `tan(x)` |
 | 对数 | `log(x)` `ln(x)` `log(底数, 真数)` `log2` `log10` |
 | 根号 | `sqrt(x)` `sqrt(根指数, 被开方数)`（如 `sqrt(3, 27)` = 27 的立方根） |
-| 其他 | `abs(x)` `exp(x)` |
+| 取整 | `floor(x)`（向下取整），`ceil(x)`（向上取整），`round(x)`（四舍五入），`trunc(x)`（截断小数） |
+| 其他 | `abs(x)` `exp(x)` `min(a, b)` `max(a, b)` `mod(a, b)` |
+| 随机数 | `Ran#`（0~1 随机小数）`RanInt(min, max)`（指定范围随机整数） |
+| 常数 | `e` `pi` |
 | 嵌套 | `3*x^2 + sin(2*x)` |
 
 ---

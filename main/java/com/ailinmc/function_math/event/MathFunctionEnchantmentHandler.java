@@ -295,9 +295,13 @@ public class MathFunctionEnchantmentHandler {
     /** 在 0~maxRange 中寻找第一个使表达式产生有效值的 x */
     private double findValidStartX(String expression, double maxRange) {
         for (double x = 0; x <= maxRange; x += 0.5) {
-            double val = ExpressionEvaluator.evaluate(expression, x);
-            if (!Double.isNaN(val) && !Double.isInfinite(val)) {
-                return x;
+            try {
+                double val = ExpressionEvaluator.evaluate(expression, x);
+                if (!Double.isNaN(val) && !Double.isInfinite(val)) {
+                    return x;
+                }
+            } catch (Exception e) {
+                // 表达式求值异常，跳过这个 x 值
             }
         }
         return -1; // 找不到有效值
@@ -412,9 +416,13 @@ public class MathFunctionEnchantmentHandler {
     }
 
     private double derivative(String expression, double x) {
-        double fx = ExpressionEvaluator.evaluate(expression, x);
-        double fxDelta = ExpressionEvaluator.evaluate(expression, x + DELTA_X_FOR_DERIVATIVE);
-        return (fxDelta - fx) / DELTA_X_FOR_DERIVATIVE;
+        try {
+            double fx = ExpressionEvaluator.evaluate(expression, x);
+            double fxDelta = ExpressionEvaluator.evaluate(expression, x + DELTA_X_FOR_DERIVATIVE);
+            return (fxDelta - fx) / DELTA_X_FOR_DERIVATIVE;
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private boolean updateProjectileMovement(Projectile projectile, ProjectileData data) {

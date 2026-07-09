@@ -47,8 +47,14 @@ public class Parser {
         return node;
     }
 
-    // 因子 → 乘方（右结合）
+    // 因子 → 一元运算 → 乘方（右结合）
     private AstNode parseFactor() {
+        // 处理一元负号
+        if (pos < tokens.size() && tokens.get(pos).type == TokenType.OPERATOR && tokens.get(pos).value.equals("-")) {
+            pos++;
+            AstNode operand = parseFactor();
+            return new UnaryOpNode("-", operand);
+        }
         AstNode node = parsePrimary();
         if (pos < tokens.size() && tokens.get(pos).type == TokenType.OPERATOR && tokens.get(pos).value.equals("^")) {
             pos++;
@@ -70,9 +76,13 @@ public class Parser {
         } else if (token.type == TokenType.FUNCTION) {
             String funcName = token.value;
             pos++;
+            // Ran# 不需要括号
+            if (funcName.equals("Ran#")) {
+                return new FunctionNode(funcName, null);
+            }
             expect(TokenType.LPAREN);
             AstNode arg = parseExpression();
-            // 支持双参数函数，如 log(base, value)
+            // 支持双参数函数，如 log(base, value), RanInt(min, max)
             if (pos < tokens.size() && tokens.get(pos).type == TokenType.COMMA) {
                 pos++;
                 AstNode arg2 = parseExpression();

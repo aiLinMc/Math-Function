@@ -20,7 +20,13 @@ public class Lexer {
             if (Character.isDigit(c) || c == '.') {
                 tokens.add(parseNumber());
             } else if (Character.isLetter(c)) {
-                tokens.add(parseIdentifier());
+                // 检查是否是 Ran#
+                if (pos + 3 < input.length() && input.startsWith("Ran#", pos)) {
+                    tokens.add(new Token(TokenType.FUNCTION, "Ran#"));
+                    pos += 4;
+                } else {
+                    tokens.add(parseIdentifier());
+                }
             } else if (c == '+' || c == '-' || c == '*' || c == '/' || c == '^') {
                 tokens.add(new Token(TokenType.OPERATOR, String.valueOf(c)));
                 pos++;
@@ -55,6 +61,13 @@ public class Lexer {
             pos++;
         }
         String id = input.substring(start, pos);
+        // 数学常数 e 和 pi
+        if (id.equals("e")) {
+            return new Token(Math.E);
+        }
+        if (id.equals("pi")) {
+            return new Token(Math.PI);
+        }
         // 处理 logN 格式（如 log2, log10）
         // 如果标识符以 log 开头且超过3个字符（如 logx），回退到 log，只读数字
         if (id.startsWith("log") && id.length() > 3) {
@@ -80,7 +93,10 @@ public class Lexer {
 
     private boolean isFunction(String name) {
         if (name.equals("sin") || name.equals("cos") || name.equals("tan") ||
-            name.equals("sqrt") || name.equals("ln") || name.equals("exp") || name.equals("abs")) {
+            name.equals("sqrt") || name.equals("ln") || name.equals("exp") || name.equals("abs") ||
+            name.equals("RanInt") || name.equals("floor") || name.equals("ceil") ||
+            name.equals("round") || name.equals("trunc") || name.equals("mod") ||
+            name.equals("min") || name.equals("max")) {
             return true;
         }
         // log 或 logN（如 log2, log10）
