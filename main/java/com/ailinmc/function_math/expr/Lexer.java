@@ -86,6 +86,8 @@ public class Lexer {
             return new Token(TokenType.VARIABLE, id);
         } else if (isFunction(id)) {
             return new Token(TokenType.FUNCTION, id);
+        } else if (CustomFunctions.exists(id)) {
+            return new Token(TokenType.FUNCTION, id);
         } else {
             throw new IllegalArgumentException("Unknown identifier: " + id);
         }

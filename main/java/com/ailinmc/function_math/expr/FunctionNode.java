@@ -76,6 +76,11 @@ public class FunctionNode extends AstNode {
                     int base = Integer.parseInt(func.substring(3));
                     return Math.log(a) / Math.log(base);
                 }
+                // 自定义函数 - 使用传入的参数值
+                if (CustomFunctions.exists(func)) {
+                    double argValue = arg != null ? arg.evaluate(x) : x;
+                    return CustomFunctions.evaluate(func, argValue);
+                }
                 throw new UnsupportedOperationException("Function: " + func);
         }
     }

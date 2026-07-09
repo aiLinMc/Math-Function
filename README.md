@@ -33,6 +33,22 @@ Math Function is a **Minecraft NeoForge mod** that transforms mathematical expre
 | Constants | `e` `pi` |
 | Nesting | `3*x^2 + sin(2*x)` |
 
+### Custom Functions
+
+Define your own reusable functions using the `/customfunction` command! This is perfect for complex expressions you use frequently.
+
+- **Add**: `/customfunction add <name> <expression>` – e.g. `/customfunction add square x^2`
+- **List**: `/customfunction list` – show all saved functions
+- **Get**: `/customfunction get <name>` – view a function's definition
+- **Eval**: `/customfunction eval <name> <x>` – quickly compute a value
+- **Modify**: `/customfunction modify <name> <new_expression>` – update a function
+- **Remove**: `/customfunction remove <name>` – delete a function
+- **Remove all**: `/customfunction remove-all` – clear all (operator only)
+
+Custom functions are saved to `custom_functions.json` and persist across restarts. They can be used anywhere expressions are accepted: `/fx` commands, anvil renames, and enchantment trajectories.
+
+> **Note**: Function names cannot conflict with built-in functions (`sin`, `sqrt`, `log`, etc.), constants (`e`, `pi`), or the reserved name `f` (to avoid conflicts with the `f(x)=` prefix).
+
 ---
 
 ## 🧪 Block Graph Command
@@ -98,6 +114,7 @@ Rename any compatible item to `f(x)=expression` or `y=expression` (e.g. `f(x)=x^
 - **Multi-shot compatibility** – Arrows spread slightly when using the Multishot enchantment.
 - **Safe by default** – Prevents rendering outside world height or exceeding performance limits.
 - **Player feedback** – Chat messages show expression, block name, execution time and origin coordinates.
+- **Custom functions** – Define and reuse your own math functions with the `/customfunction` command.
 
 ---
 
@@ -161,6 +178,22 @@ See the [LICENSE](https://github.com/aiLinMc/Math-Function/blob/main/LICENSE) fi
 | 随机数 | `Ran#`（0~1 随机小数）`RanInt(min, max)`（指定范围随机整数） |
 | 常数 | `e` `pi` |
 | 嵌套 | `3*x^2 + sin(2*x)` |
+
+### 自定义函数
+
+使用 `/customfunction` 命令创建自己的可复用函数！非常适合经常使用的复杂表达式。
+
+- **添加**：`/customfunction add <名称> <表达式>` – 例如 `/customfunction add square x^2`
+- **列表**：`/customfunction list` – 显示所有已保存的函数
+- **查看**：`/customfunction get <名称>` – 查看函数定义
+- **计算**：`/customfunction eval <名称> <x值>` – 快速计算函数值
+- **修改**：`/customfunction modify <名称> <新表达式>` – 更新函数
+- **删除**：`/customfunction remove <名称>` – 删除函数
+- **全部删除**：`/customfunction remove-all` – 清空所有（需管理员权限）
+
+自定义函数保存在 `custom_functions.json` 文件中，重启后依然保留。它们可以在任何接受表达式的地方使用：`/fx` 命令、铁砧命名和附魔轨迹。
+
+> **注意**：函数名称不能与内置函数（`sin`、`sqrt`、`log` 等）、常数（`e`、`pi`）或保留名称 `f`（避免与 `f(x)=` 前缀冲突）重名。
 
 ---
 
@@ -229,6 +262,7 @@ See the [LICENSE](https://github.com/aiLinMc/Math-Function/blob/main/LICENSE) fi
 - **多重射击兼容** – 使用多重射击附魔时箭矢会略微分散。
 - **默认安全机制** – 限制超出世界高度或性能开销过大的情况。
 - **玩家反馈** – 聊天栏显示表达式、方块名称、执行耗时和原点坐标。
+- **自定义函数** – 使用 `/customfunction` 命令定义和复用你自己的数学函数。
 
 ---
 

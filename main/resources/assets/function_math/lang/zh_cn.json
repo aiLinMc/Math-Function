@@ -10,5 +10,21 @@
   "function_math.error.invalid_expression": "§c表达式无效",
   "function_math.error.no_valid_points": "§c没有有效的函数值，无法生成图像",
   "enchantment.function_math.math_function": "函数",
-  "function_math.trident.stop_action": "按 跳跃键 停止飞行"
+  "function_math.trident.stop_action": "按 跳跃键 停止飞行",
+  "function_math.command.customfunction.add.reserved": "§c函数名 '%s' 是保留名称",
+  "function_math.command.customfunction.add.invalid_name": "§c函数名必须以英文字母开头，且只能包含英文字母和数字",
+  "function_math.command.customfunction.add.exists": "§c函数名 '%s' 已存在，请使用 modify 命令修改",
+  "function_math.command.customfunction.add.success": "§a已添加自定义函数: %s(x) = %s",
+  "function_math.command.customfunction.add.failed": "§c添加失败",
+  "function_math.command.customfunction.get.success": "§6%s(x) = %s",
+  "function_math.command.customfunction.eval.success": "§6%s(%s) = %s",
+  "function_math.command.customfunction.remove.success": "§a已删除自定义函数: %s",
+  "function_math.command.customfunction.remove_all.empty": "§e没有自定义函数可删除",
+  "function_math.command.customfunction.remove_all.success": "§a已删除所有自定义函数",
+  "function_math.command.customfunction.list.empty": "§e没有自定义函数",
+  "function_math.command.customfunction.list.title": "§6自定义函数列表:",
+  "function_math.command.customfunction.list.item": "  %s(x) = %s",
+  "function_math.command.customfunction.modify.success": "§a已修改自定义函数: %s(x) = %s",
+  "function_math.command.customfunction.error.not_found": "§c未找到自定义函数: %s",
+  "function_math.command.customfunction.error.invalid_expression": "§c表达式无效: %s"
 }
