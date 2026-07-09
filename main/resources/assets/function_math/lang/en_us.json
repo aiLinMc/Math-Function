@@ -10,21 +10,5 @@
   "function_math.error.invalid_expression": "§cInvalid expression",
   "function_math.error.no_valid_points": "§cNo valid function values, cannot generate image",
   "enchantment.function_math.math_function": "Math Function",
-  "function_math.trident.stop_action": "Press Jump Key to stop flying",
-  "function_math.command.customfunction.add.reserved": "§cFunction name '%s' is reserved",
-  "function_math.command.customfunction.add.invalid_name": "§cFunction name must start with a letter and contain only letters and digits",
-  "function_math.command.customfunction.add.exists": "§cFunction '%s' already exists, use modify command instead",
-  "function_math.command.customfunction.add.success": "§aCustom function added: %s(x) = %s",
-  "function_math.command.customfunction.add.failed": "§cAdd failed",
-  "function_math.command.customfunction.get.success": "§6%s(x) = %s",
-  "function_math.command.customfunction.eval.success": "§6%s(%s) = %s",
-  "function_math.command.customfunction.remove.success": "§aCustom function removed: %s",
-  "function_math.command.customfunction.remove_all.empty": "§eNo custom functions to remove",
-  "function_math.command.customfunction.remove_all.success": "§aAll custom functions removed",
-  "function_math.command.customfunction.list.empty": "§eNo custom functions",
-  "function_math.command.customfunction.list.title": "§6Custom functions:",
-  "function_math.command.customfunction.list.item": "  %s(x) = %s",
-  "function_math.command.customfunction.modify.success": "§aCustom function modified: %s(x) = %s",
-  "function_math.command.customfunction.error.not_found": "§cCustom function not found: %s",
-  "function_math.command.customfunction.error.invalid_expression": "§cInvalid expression: %s"
+  "function_math.trident.stop_action": "Press Jump Key to stop flying"
 }

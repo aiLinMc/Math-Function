@@ -26,11 +26,11 @@ import java.util.Collection;
 import java.util.ArrayList;
 
 import com.ailinmc.function_math.network.StopTridentFlightPayload;
+import com.ailinmc.function_math.expr.CustomFunctions;
 import com.ailinmc.function_math.event.TridentSpinAttackHandler;
 import com.ailinmc.function_math.event.TridentFlightKeyHandler;
 import com.ailinmc.function_math.event.MathFunctionEnchantmentHandler;
 import com.ailinmc.function_math.event.AnvilHandler;
-import com.ailinmc.function_math.expr.CustomFunctions;
 
 @Mod("function_math")
 public class FunctionMathMod {

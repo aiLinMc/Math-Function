@@ -1,5 +1,7 @@
 # Math Function
 
+中文介绍请跳往下面
+
 **Bring mathematics to life in Minecraft with function-powered projectiles and graphs!**
 
 [![License](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0.html)
