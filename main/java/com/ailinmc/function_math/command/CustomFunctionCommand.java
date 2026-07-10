@@ -14,6 +14,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 
 import com.ailinmc.function_math.expr.CustomFunctions;
 import com.ailinmc.function_math.expr.ExpressionEvaluator;
+import com.ailinmc.function_math.expr.RecursionException;
 
 @EventBusSubscriber
 public class CustomFunctionCommand {
@@ -86,11 +87,15 @@ public class CustomFunctionCommand {
                                                 .executes(ctx -> {
                                                     String name = StringArgumentType.getString(ctx, "name");
                                                     double x = DoubleArgumentType.getDouble(ctx, "x");
-                                                    double result = CustomFunctions.evaluate(name, x);
-                                                    if (!Double.isNaN(result)) {
-                                                        ctx.getSource().sendSuccess(() -> Component.translatable("function_math.command.customfunction.eval.success", name, x, result), false);
-                                                    } else {
-                                                        ctx.getSource().sendFailure(Component.translatable("function_math.command.customfunction.error.not_found", name));
+                                                    try {
+                                                        double result = CustomFunctions.evaluate(name, x);
+                                                        if (!Double.isNaN(result)) {
+                                                            ctx.getSource().sendSuccess(() -> Component.translatable("function_math.command.customfunction.eval.success", name, x, result), false);
+                                                        } else {
+                                                            ctx.getSource().sendFailure(Component.translatable("function_math.command.customfunction.error.not_found", name));
+                                                        }
+                                                    } catch (RecursionException e) {
+                                                        ctx.getSource().sendFailure(Component.translatable("function_math.command.customfunction.error.recursion"));
                                                     }
                                                     return 0;
                                                 }))))

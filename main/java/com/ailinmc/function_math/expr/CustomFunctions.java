@@ -11,12 +11,15 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class CustomFunctions {
     private static final Map<String, String> functions = new HashMap<>();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Type MAP_TYPE = new TypeToken<Map<String, String>>() {}.getType();
+    private static final ThreadLocal<Set<String>> CALL_STACK = ThreadLocal.withInitial(HashSet::new);
 
     private static File getConfigFile() {
         return new File(FMLPaths.GAMEDIR.get().toFile(), "custom_functions.json");
@@ -80,9 +83,14 @@ public class CustomFunctions {
         if (functions.containsKey(name)) {
             return false;
         }
-        functions.put(name, expression);
-        saveToFile();
-        return true;
+        try {
+            ExpressionEvaluator.parse(expression);
+            functions.put(name, expression);
+            saveToFile();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public static boolean modifyFunction(String name, String expression) {
@@ -140,11 +148,22 @@ public class CustomFunctions {
         return new HashMap<>(functions);
     }
 
+    private static final int MAX_RECURSION_DEPTH = 64;
+
     public static double evaluate(String name, double x) {
-        String expression = functions.get(name);
-        if (expression == null) {
-            return Double.NaN;
+        Set<String> stack = CALL_STACK.get();
+        if (stack.contains(name) || stack.size() >= MAX_RECURSION_DEPTH) {
+            throw new RecursionException();
         }
-        return ExpressionEvaluator.evaluate(expression, x);
+        stack.add(name);
+        try {
+            String expression = functions.get(name);
+            if (expression == null) {
+                return Double.NaN;
+            }
+            return ExpressionEvaluator.evaluate(expression, x);
+        } finally {
+            stack.remove(name);
+        }
     }
 }
