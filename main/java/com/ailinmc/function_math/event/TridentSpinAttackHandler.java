@@ -264,22 +264,7 @@ public class TridentSpinAttackHandler {
             return false;
         }
 
-        // 超过最大 tick 数：终止并恢复重力，防止表达式长期有效导致玩家永久滞空
-        data.ticksAlive++;
-        if (data.ticksAlive > MAX_TICKS) {
-            com.ailinmc.function_math.FunctionMathMod.LOGGER
-                    .info("[TridentSpinAttack] 超过最大持续时间，终止激流轨迹");
-            return true;
-        }
-
         data.projectedDistance += PLAYER_SPEED;
-
-        // 超过最大水平距离：终止并恢复重力，防止表达式发散（如 f(x)=x^2）导致无限飞行
-        if (data.projectedDistance > MAX_DISTANCE) {
-            com.ailinmc.function_math.FunctionMathMod.LOGGER
-                    .info("[TridentSpinAttack] 超过最大飞行距离，终止激流轨迹");
-            return true;
-        }
 
         double xMath = data.projectedDistance / TRAJECTORY_SCALE;
 

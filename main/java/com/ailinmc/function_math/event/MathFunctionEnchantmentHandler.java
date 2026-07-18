@@ -41,6 +41,8 @@ public class MathFunctionEnchantmentHandler {
     private static final Map<FireworkRocketEntity, RocketData> rocketDataMap = new ConcurrentHashMap<>();  // 新增
 
     private static final Pattern EXPRESSION_PATTERN = Pattern.compile("^(f\\(x\\)=|y=)(.+)$");
+    private static final Pattern DUAL_EXPRESSION_PATTERN = Pattern.compile("^y=(.+?);z=(.+)$");
+    private static final Pattern Z_ONLY_PATTERN = Pattern.compile("^z=(.+)$");
     private static final double HORIZONTAL_SPEED = 0.3;
     private static final double MAX_DISTANCE = 1000;
     private static final int MAX_TICKS = 30 * 20;
@@ -156,8 +158,9 @@ public class MathFunctionEnchantmentHandler {
                     projectileName = mainHand.getHoverName().getString();
                 }
 
-                String expression = extractExpression(projectileName);
-                if (!expression.isEmpty() && isExpressionValid(expression)) {
+                ExpressionData exprData = parseExpressionData(projectileName);
+                String expression = exprData.isDual ? ("y=" + exprData.yExpression + ";z=" + exprData.zExpression) : exprData.yExpression;
+                if (!expression.isEmpty() && isExpressionValid(exprData)) {
                     float yaw = shooter.getYRot();
                     double rad = Math.toRadians(yaw);
                     Vec3 baseDir = new Vec3(-Math.sin(rad), 0, Math.cos(rad)).normalize();
@@ -186,11 +189,14 @@ public class MathFunctionEnchantmentHandler {
 
                     ProjectileData data = new ProjectileData(
                         expression,
-                        projectile.position(),   // 以实体实际位置为原点
+                        exprData.yExpression,
+                        exprData.zExpression,
+                        exprData.isDual,
+                        projectile.position(),
                         horizontalDir,
                         0.0,
                         0,
-                        projectile.position()    // lastPos 初始为当前位置
+                        projectile.position()
                     );
                     projectileDataMap.put(projectile, data);
                     com.ailinmc.function_math.FunctionMathMod.LOGGER.info("启用函数轨迹: " + expression + ", 方向: " + horizontalDir);
@@ -210,8 +216,9 @@ public class MathFunctionEnchantmentHandler {
 
                 ItemStack flintAndSteel = mainHand.getItem() == Items.FLINT_AND_STEEL ? mainHand : offHand;
                 String displayName = flintAndSteel.getHoverName().getString();
-                String expression = extractExpression(displayName);
-                if (expression.isEmpty() || !isExpressionValid(expression)) {
+                ExpressionData exprData = parseExpressionData(displayName);
+                String expression = exprData.isDual ? ("y=" + exprData.yExpression + ";z=" + exprData.zExpression) : exprData.yExpression;
+                if (expression.isEmpty() || !isExpressionValid(exprData)) {
                     com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("打火石表达式无效: " + displayName);
                     return;
                 }
@@ -223,9 +230,11 @@ public class MathFunctionEnchantmentHandler {
                 double rad = Math.toRadians(yaw);
                 Vec3 horizontalDir = new Vec3(-Math.sin(rad), 0, Math.cos(rad)).normalize();
 
-                // 关键修改：origin 使用 tnt 的实际生成位置
                 TNTData data = new TNTData(
                     expression,
+                    exprData.yExpression,
+                    exprData.zExpression,
+                    exprData.isDual,
                     tnt.position().add(new Vec3(0, 0.1, 0)),
                     horizontalDir,
                     0.0,
@@ -246,29 +255,27 @@ public class MathFunctionEnchantmentHandler {
             boolean hasEnchant = hasMathFunctionEnchantment(mainHand) || hasMathFunctionEnchantment(offHand);
             if (!hasEnchant) return;
 
-            // 获取表达式（优先从主手物品名称提取，也可根据实际情况调整）
-            String displayName = mainHand.getHoverName().getString();
-            String expression = extractExpression(displayName);
-            if (expression.isEmpty() || !isExpressionValid(expression)) {
-                // 若主手没有，试试副手
-                displayName = offHand.getHoverName().getString();
-                expression = extractExpression(displayName);
-                if (expression.isEmpty() || !isExpressionValid(expression)) return;
+            ExpressionData exprData = parseExpressionData(mainHand.getHoverName().getString());
+            String expression = exprData.isDual ? ("y=" + exprData.yExpression + ";z=" + exprData.zExpression) : exprData.yExpression;
+            if (expression.isEmpty() || !isExpressionValid(exprData)) {
+                exprData = parseExpressionData(offHand.getHoverName().getString());
+                expression = exprData.isDual ? ("y=" + exprData.yExpression + ";z=" + exprData.zExpression) : exprData.yExpression;
+                if (expression.isEmpty() || !isExpressionValid(exprData)) return;
             }
 
-            // 禁用重力和初速度，并持续压制原版烟花推进逻辑
             rocket.setNoGravity(true);
             rocket.setDeltaMovement(Vec3.ZERO);
             rocket.hasImpulse = false;
 
-            // 计算水平方向（同箭矢）
             float yaw = shooter.getYRot();
             double rad = Math.toRadians(yaw);
             Vec3 horizontalDir = new Vec3(-Math.sin(rad), 0, Math.cos(rad)).normalize();
 
-            // 以火箭当前位置为原点
             RocketData data = new RocketData(
                 expression,
+                exprData.yExpression,
+                exprData.zExpression,
+                exprData.isDual,
                 rocket.position(),
                 horizontalDir,
                 0.0,
@@ -282,12 +289,23 @@ public class MathFunctionEnchantmentHandler {
 
     private boolean isExpressionValid(String expression) {
         try {
-            // 只检查表达式能否解析，不检查特定 x 值是否有效
-            // 起始位置的无效值会在 firstTick 中自动跳过
             ExpressionEvaluator.parse(expression);
             return true;
         } catch (Exception e) {
             com.ailinmc.function_math.FunctionMathMod.LOGGER.error("表达式解析错误: " + expression, e);
+            return false;
+        }
+    }
+
+    private boolean isExpressionValid(ExpressionData exprData) {
+        try {
+            ExpressionEvaluator.parse(exprData.yExpression);
+            if (exprData.isDual) {
+                ExpressionEvaluator.parse(exprData.zExpression);
+            }
+            return true;
+        } catch (Exception e) {
+            com.ailinmc.function_math.FunctionMathMod.LOGGER.error("表达式解析错误: " + exprData.yExpression + (exprData.isDual ? (";" + exprData.zExpression) : ""), e);
             return false;
         }
     }
@@ -427,28 +445,44 @@ public class MathFunctionEnchantmentHandler {
 
     private boolean updateProjectileMovement(Projectile projectile, ProjectileData data) {
         projectile.setNoGravity(true);
+        Vec3 rightDir = new Vec3(-data.lookVector.z, 0, data.lookVector.x).normalize();
+
         if (data.firstTick) {
             data.firstTick = false;
-            // 寻找有效的起始 x 值
-            double startX = findValidStartX(data.expression, 10.0);
+            double startX = findValidStartX(data.yExpression, 10.0);
             if (startX < 0) {
                 com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("无法找到有效的起始x值: " + data.expression);
                 return true;
             }
             data.projectedDistance = startX * TRAJECTORY_SCALE;
             try {
-                double f0 = ExpressionEvaluator.evaluate(data.expression, startX);
+                double f0 = ExpressionEvaluator.evaluate(data.yExpression, startX);
                 double targetY = data.origin.y + f0;
                 targetY = Math.min(MAX_Y, Math.max(MIN_Y, targetY));
                 double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
                 double targetZ = data.origin.z + data.lookVector.z * data.projectedDistance;
+
+                if (data.isDual) {
+                    double z0 = ExpressionEvaluator.evaluate(data.zExpression, startX);
+                    targetX += rightDir.x * z0;
+                    targetZ += rightDir.z * z0;
+                }
+
                 Vec3 target = new Vec3(targetX, targetY, targetZ);
                 projectile.setPos(target.x, target.y, target.z);
                 data.lastPos = target;
-                double slope0 = derivative(data.expression, startX) / TRAJECTORY_SCALE;
+
+                double slope0 = derivative(data.yExpression, startX) / TRAJECTORY_SCALE;
                 double tanX0 = data.lookVector.x * HORIZONTAL_SPEED;
                 double tanY0 = slope0 * HORIZONTAL_SPEED;
                 double tanZ0 = data.lookVector.z * HORIZONTAL_SPEED;
+
+                if (data.isDual) {
+                    double zSlope0 = derivative(data.zExpression, startX) / TRAJECTORY_SCALE;
+                    tanX0 += rightDir.x * zSlope0 * HORIZONTAL_SPEED;
+                    tanZ0 += rightDir.z * zSlope0 * HORIZONTAL_SPEED;
+                }
+
                 double horizMag0 = Math.sqrt(tanX0 * tanX0 + tanZ0 * tanZ0);
                 if (horizMag0 > 1e-8 || Math.abs(tanY0) > 1e-8) {
                     float yaw0 = (float) (Math.atan2(tanX0, tanZ0) * 180.0 / Math.PI);
@@ -467,9 +501,8 @@ public class MathFunctionEnchantmentHandler {
         double xMath = data.projectedDistance / TRAJECTORY_SCALE;
 
         try {
-            double rawY = ExpressionEvaluator.evaluate(data.expression, xMath);
+            double rawY = ExpressionEvaluator.evaluate(data.yExpression, xMath);
             if (Double.isNaN(rawY) || Double.isInfinite(rawY)) {
-                // 跳过无效值，继续轨迹
                 return false;
             }
 
@@ -478,12 +511,28 @@ public class MathFunctionEnchantmentHandler {
             double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
             double targetZ = data.origin.z + data.lookVector.z * data.projectedDistance;
 
+            if (data.isDual) {
+                double rawZ = ExpressionEvaluator.evaluate(data.zExpression, xMath);
+                if (Double.isNaN(rawZ) || Double.isInfinite(rawZ)) {
+                    return false;
+                }
+                targetX += rightDir.x * rawZ;
+                targetZ += rightDir.z * rawZ;
+            }
+
             Vec3 newPos = new Vec3(targetX, targetY, targetZ);
 
-            double slope = derivative(data.expression, xMath) / TRAJECTORY_SCALE;
+            double slope = derivative(data.yExpression, xMath) / TRAJECTORY_SCALE;
             double tanX = data.lookVector.x * HORIZONTAL_SPEED;
             double tanY = slope * HORIZONTAL_SPEED;
             double tanZ = data.lookVector.z * HORIZONTAL_SPEED;
+
+            if (data.isDual) {
+                double zSlope = derivative(data.zExpression, xMath) / TRAJECTORY_SCALE;
+                tanX += rightDir.x * zSlope * HORIZONTAL_SPEED;
+                tanZ += rightDir.z * zSlope * HORIZONTAL_SPEED;
+            }
+
             Vec3 tangentVelocity = new Vec3(tanX, tanY, tanZ);
 
             if (hasSolidCollisionBetween(projectile, data.lastPos, newPos)) {
@@ -519,27 +568,44 @@ public class MathFunctionEnchantmentHandler {
 
     // ---------- TNT 运动更新 ----------
     private boolean updateTNTMovement(PrimedTnt tnt, TNTData data) {
+        Vec3 rightDir = new Vec3(-data.lookVector.z, 0, data.lookVector.x).normalize();
+
         if (data.firstTick) {
             data.firstTick = false;
-            double startX = findValidStartX(data.expression, 10.0);
+            double startX = findValidStartX(data.yExpression, 10.0);
             if (startX < 0) {
                 com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("TNT 无法找到有效的起始x值: " + data.expression);
                 return true;
             }
             data.projectedDistance = startX * TRAJECTORY_SCALE;
             try {
-                double f0 = ExpressionEvaluator.evaluate(data.expression, startX);
+                double f0 = ExpressionEvaluator.evaluate(data.yExpression, startX);
                 double targetY = data.origin.y + f0;
                 targetY = Math.min(MAX_Y, Math.max(MIN_Y, targetY));
                 double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
                 double targetZ = data.origin.z + data.lookVector.z * data.projectedDistance;
+
+                if (data.isDual) {
+                    double z0 = ExpressionEvaluator.evaluate(data.zExpression, startX);
+                    targetX += rightDir.x * z0;
+                    targetZ += rightDir.z * z0;
+                }
+
                 Vec3 target = new Vec3(targetX, targetY, targetZ);
                 tnt.setPos(target.x, target.y, target.z);
                 data.lastPos = target;
-                double slope0 = derivative(data.expression, startX) / TRAJECTORY_SCALE;
+
+                double slope0 = derivative(data.yExpression, startX) / TRAJECTORY_SCALE;
                 double tanX0 = data.lookVector.x * HORIZONTAL_SPEED;
                 double tanY0 = slope0 * HORIZONTAL_SPEED;
                 double tanZ0 = data.lookVector.z * HORIZONTAL_SPEED;
+
+                if (data.isDual) {
+                    double zSlope0 = derivative(data.zExpression, startX) / TRAJECTORY_SCALE;
+                    tanX0 += rightDir.x * zSlope0 * HORIZONTAL_SPEED;
+                    tanZ0 += rightDir.z * zSlope0 * HORIZONTAL_SPEED;
+                }
+
                 double horizMag0 = Math.sqrt(tanX0 * tanX0 + tanZ0 * tanZ0);
                 if (horizMag0 > 1e-8 || Math.abs(tanY0) > 1e-8) {
                     float yaw0 = (float) (Math.atan2(tanX0, tanZ0) * 180.0 / Math.PI);
@@ -558,7 +624,7 @@ public class MathFunctionEnchantmentHandler {
         double xMath = data.projectedDistance / TRAJECTORY_SCALE;
 
         try {
-            double rawY = ExpressionEvaluator.evaluate(data.expression, xMath);
+            double rawY = ExpressionEvaluator.evaluate(data.yExpression, xMath);
             if (Double.isNaN(rawY) || Double.isInfinite(rawY)) {
                 return false;
             }
@@ -568,23 +634,37 @@ public class MathFunctionEnchantmentHandler {
             double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
             double targetZ = data.origin.z + data.lookVector.z * data.projectedDistance;
 
+            if (data.isDual) {
+                double rawZ = ExpressionEvaluator.evaluate(data.zExpression, xMath);
+                if (Double.isNaN(rawZ) || Double.isInfinite(rawZ)) {
+                    return false;
+                }
+                targetX += rightDir.x * rawZ;
+                targetZ += rightDir.z * rawZ;
+            }
+
             Vec3 newPos = new Vec3(targetX, targetY, targetZ);
             Vec3 delta = newPos.subtract(data.lastPos);
 
-            // 碰撞预检测（若路径上有方块则立即爆炸）
             if (hasSolidCollisionBetween(tnt, data.lastPos, newPos)) {
                 explodeTnt(tnt);
                 return true;
             }
 
             tnt.setPos(targetX, targetY, targetZ);
-            tnt.setDeltaMovement(delta);  // 设置运动用于碰撞检测，但已禁用重力
+            tnt.setDeltaMovement(delta);
 
-            // 用解析切线向量计算朝向（pitch 正值=俯视，故上升段用 +tanY）
-            double slope = derivative(data.expression, xMath) / TRAJECTORY_SCALE;
+            double slope = derivative(data.yExpression, xMath) / TRAJECTORY_SCALE;
             double tanX = data.lookVector.x * HORIZONTAL_SPEED;
             double tanY = slope * HORIZONTAL_SPEED;
             double tanZ = data.lookVector.z * HORIZONTAL_SPEED;
+
+            if (data.isDual) {
+                double zSlope = derivative(data.zExpression, xMath) / TRAJECTORY_SCALE;
+                tanX += rightDir.x * zSlope * HORIZONTAL_SPEED;
+                tanZ += rightDir.z * zSlope * HORIZONTAL_SPEED;
+            }
+
             double horizMag = Math.sqrt(tanX * tanX + tanZ * tanZ);
             if (horizMag > 1e-8 || Math.abs(tanY) > 1e-8) {
                 float yaw = (float) (Math.atan2(tanX, tanZ) * 180.0 / Math.PI);
@@ -732,32 +812,46 @@ public class MathFunctionEnchantmentHandler {
 
     // ---------- 烟花火箭运动更新 ----------
     private boolean updateRocketMovement(FireworkRocketEntity rocket, RocketData data) {
-        // 每 tick 首先强制清零速度，压制原版烟花推进逻辑（原版在自己的 tick() 里会累加向上速度）
-        // 必须在位置计算前清零，否则原版物理会在我们 setPos 之前先移动实体，造成抖动
         rocket.setDeltaMovement(Vec3.ZERO);
         rocket.setNoGravity(true);
+        Vec3 rightDir = new Vec3(-data.lookVector.z, 0, data.lookVector.x).normalize();
 
         if (data.firstTick) {
             data.firstTick = false;
-            double startX = findValidStartX(data.expression, 10.0);
+            double startX = findValidStartX(data.yExpression, 10.0);
             if (startX < 0) {
                 com.ailinmc.function_math.FunctionMathMod.LOGGER.warn("火箭无法找到有效的起始x值: " + data.expression);
                 return true;
             }
             data.projectedDistance = startX * TRAJECTORY_SCALE;
             try {
-                double f0 = ExpressionEvaluator.evaluate(data.expression, startX);
+                double f0 = ExpressionEvaluator.evaluate(data.yExpression, startX);
                 double targetY = data.origin.y + f0;
                 targetY = Math.min(MAX_Y, Math.max(MIN_Y, targetY));
                 double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
                 double targetZ = data.origin.z + data.lookVector.z * data.projectedDistance;
+
+                if (data.isDual) {
+                    double z0 = ExpressionEvaluator.evaluate(data.zExpression, startX);
+                    targetX += rightDir.x * z0;
+                    targetZ += rightDir.z * z0;
+                }
+
                 Vec3 target = new Vec3(targetX, targetY, targetZ);
                 rocket.setPos(target.x, target.y, target.z);
                 data.lastPos = target;
-                double slope0 = derivative(data.expression, startX) / TRAJECTORY_SCALE;
+
+                double slope0 = derivative(data.yExpression, startX) / TRAJECTORY_SCALE;
                 double tanX0 = data.lookVector.x * HORIZONTAL_SPEED;
                 double tanY0 = slope0 * HORIZONTAL_SPEED;
                 double tanZ0 = data.lookVector.z * HORIZONTAL_SPEED;
+
+                if (data.isDual) {
+                    double zSlope0 = derivative(data.zExpression, startX) / TRAJECTORY_SCALE;
+                    tanX0 += rightDir.x * zSlope0 * HORIZONTAL_SPEED;
+                    tanZ0 += rightDir.z * zSlope0 * HORIZONTAL_SPEED;
+                }
+
                 double horizMag0 = Math.sqrt(tanX0 * tanX0 + tanZ0 * tanZ0);
                 if (horizMag0 > 1e-8 || Math.abs(tanY0) > 1e-8) {
                     float yaw0 = (float) (Math.atan2(tanX0, tanZ0) * 180.0 / Math.PI);
@@ -777,7 +871,7 @@ public class MathFunctionEnchantmentHandler {
         double xMath = data.projectedDistance / TRAJECTORY_SCALE;
 
         try {
-            double rawY = ExpressionEvaluator.evaluate(data.expression, xMath);
+            double rawY = ExpressionEvaluator.evaluate(data.yExpression, xMath);
             if (Double.isNaN(rawY) || Double.isInfinite(rawY)) {
                 return false;
             }
@@ -787,30 +881,42 @@ public class MathFunctionEnchantmentHandler {
             double targetX = data.origin.x + data.lookVector.x * data.projectedDistance;
             double targetZ = data.origin.z + data.lookVector.z * data.projectedDistance;
 
+            if (data.isDual) {
+                double rawZ = ExpressionEvaluator.evaluate(data.zExpression, xMath);
+                if (Double.isNaN(rawZ) || Double.isInfinite(rawZ)) {
+                    return false;
+                }
+                targetX += rightDir.x * rawZ;
+                targetZ += rightDir.z * rawZ;
+            }
+
             Vec3 newPos = new Vec3(targetX, targetY, targetZ);
 
-            double slope = derivative(data.expression, xMath) / TRAJECTORY_SCALE;
+            double slope = derivative(data.yExpression, xMath) / TRAJECTORY_SCALE;
             double tanX = data.lookVector.x * HORIZONTAL_SPEED;
             double tanY = slope * HORIZONTAL_SPEED;
             double tanZ = data.lookVector.z * HORIZONTAL_SPEED;
+
+            if (data.isDual) {
+                double zSlope = derivative(data.zExpression, xMath) / TRAJECTORY_SCALE;
+                tanX += rightDir.x * zSlope * HORIZONTAL_SPEED;
+                tanZ += rightDir.z * zSlope * HORIZONTAL_SPEED;
+            }
+
             Vec3 tangentVelocity = new Vec3(tanX, tanY, tanZ);
 
             if (hasSolidCollisionBetween(rocket, data.lastPos, newPos)) {
-                // 碰到方块：在碰撞点爆炸，与原版 onHitBlock 行为一致
                 explodeRocket(rocket, newPos);
                 return true;
             }
 
             Entity hitEntity = getEntityHit(rocket, data.lastPos, newPos);
             if (hitEntity != null) {
-                // 碰到实体：在实体位置爆炸，与原版 onHitEntity 行为一致
                 explodeRocket(rocket, hitEntity.position());
                 return true;
             }
 
             rocket.setPos(targetX, targetY, targetZ);
-            // setPos 之后立即再次清零速度：原版 FireworkRocketEntity.tick() 在同一帧内可能还有后续逻辑，
-            // 如果此时速度不为零，下一帧开始时实体会被原版逻辑再移动一次，产生"飞起来又被拉回"的抖动。
             rocket.setDeltaMovement(Vec3.ZERO);
 
             double horizMag = Math.sqrt(tanX * tanX + tanZ * tanZ);
@@ -890,18 +996,52 @@ public class MathFunctionEnchantmentHandler {
         );
     }
 
-    // ---------- 表达式提取 ----------
-    private String extractExpression(String displayName) {
-        Matcher matcher = EXPRESSION_PATTERN.matcher(displayName);
-        if (matcher.matches()) {
-            return matcher.group(2).trim();
+    private static class ExpressionData {
+        public final String yExpression;
+        public final String zExpression;
+        public final boolean isDual;
+
+        public ExpressionData(String yExpression, String zExpression) {
+            this.yExpression = yExpression;
+            this.zExpression = zExpression;
+            this.isDual = zExpression != null && !zExpression.isEmpty();
         }
-        return "";
+
+        public static ExpressionData parse(String displayName) {
+            Matcher dualMatcher = DUAL_EXPRESSION_PATTERN.matcher(displayName);
+            if (dualMatcher.matches()) {
+                return new ExpressionData(dualMatcher.group(1).trim(), dualMatcher.group(2).trim());
+            }
+            Matcher zOnlyMatcher = Z_ONLY_PATTERN.matcher(displayName);
+            if (zOnlyMatcher.matches()) {
+                return new ExpressionData("0", zOnlyMatcher.group(1).trim());
+            }
+            Matcher singleMatcher = EXPRESSION_PATTERN.matcher(displayName);
+            if (singleMatcher.matches()) {
+                return new ExpressionData(singleMatcher.group(2).trim(), null);
+            }
+            return new ExpressionData("", null);
+        }
+    }
+
+    private String extractExpression(String displayName) {
+        ExpressionData data = ExpressionData.parse(displayName);
+        if (data.isDual) {
+            return "y=" + data.yExpression + ";z=" + data.zExpression;
+        }
+        return data.yExpression;
+    }
+
+    private ExpressionData parseExpressionData(String displayName) {
+        return ExpressionData.parse(displayName);
     }
 
     // ---------- 数据类 ----------
     private static class ProjectileData {
         public final String expression;
+        public final String yExpression;
+        public final String zExpression;
+        public final boolean isDual;
         public final Vec3 origin;
         public final Vec3 lookVector;
         public double projectedDistance;
@@ -909,9 +1049,12 @@ public class MathFunctionEnchantmentHandler {
         public boolean firstTick;
         public Vec3 lastPos;   // 用于计算朝向
 
-        public ProjectileData(String expression, Vec3 origin, Vec3 lookVector,
-                              double distance, int ticks, Vec3 lastPos) {
+        public ProjectileData(String expression, String yExpression, String zExpression, boolean isDual,
+                              Vec3 origin, Vec3 lookVector, double distance, int ticks, Vec3 lastPos) {
             this.expression = expression;
+            this.yExpression = yExpression;
+            this.zExpression = zExpression;
+            this.isDual = isDual;
             this.origin = origin;
             this.lookVector = lookVector;
             this.projectedDistance = distance;
@@ -923,6 +1066,9 @@ public class MathFunctionEnchantmentHandler {
 
     private static class TNTData {
         public final String expression;
+        public final String yExpression;
+        public final String zExpression;
+        public final boolean isDual;
         public final Vec3 origin;
         public final Vec3 lookVector;
         public double projectedDistance;
@@ -930,9 +1076,12 @@ public class MathFunctionEnchantmentHandler {
         public boolean firstTick;
         public Vec3 lastPos;
 
-        public TNTData(String expression, Vec3 origin, Vec3 lookVector,
-                       double distance, int ticks, Vec3 lastPos) {
+        public TNTData(String expression, String yExpression, String zExpression, boolean isDual,
+                       Vec3 origin, Vec3 lookVector, double distance, int ticks, Vec3 lastPos) {
             this.expression = expression;
+            this.yExpression = yExpression;
+            this.zExpression = zExpression;
+            this.isDual = isDual;
             this.origin = origin;
             this.lookVector = lookVector;
             this.projectedDistance = distance;
@@ -944,6 +1093,9 @@ public class MathFunctionEnchantmentHandler {
 
     private static class RocketData {
         public final String expression;
+        public final String yExpression;
+        public final String zExpression;
+        public final boolean isDual;
         public final Vec3 origin;
         public final Vec3 lookVector;
         public double projectedDistance;
@@ -951,9 +1103,12 @@ public class MathFunctionEnchantmentHandler {
         public boolean firstTick;
         public Vec3 lastPos;
 
-        public RocketData(String expression, Vec3 origin, Vec3 lookVector,
-                          double distance, int ticks, Vec3 lastPos) {
+        public RocketData(String expression, String yExpression, String zExpression, boolean isDual,
+                          Vec3 origin, Vec3 lookVector, double distance, int ticks, Vec3 lastPos) {
             this.expression = expression;
+            this.yExpression = yExpression;
+            this.zExpression = zExpression;
+            this.isDual = isDual;
             this.origin = origin;
             this.lookVector = lookVector;
             this.projectedDistance = distance;

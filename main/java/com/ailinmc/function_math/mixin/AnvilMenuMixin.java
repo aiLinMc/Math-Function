@@ -42,8 +42,7 @@ public abstract class AnvilMenuMixin {
         }
         
         if (itemName != null && !itemName.isEmpty()) {
-            String cleanExpr = stripExpressionPrefix(itemName);
-            if (isValidFunctionExpression(cleanExpr)) {
+            if (isValidFunctionExpression(itemName)) {
                 menu.setMaximumCost(0);
             }
         }
@@ -72,28 +71,47 @@ public abstract class AnvilMenuMixin {
 
     private boolean isValidFunctionExpression(String expression) {
         if (expression == null || expression.isEmpty()) return false;
+        String s = expression.trim();
+        
+        if (s.startsWith("y=") || s.startsWith("Y=")) {
+            if (s.contains(";")) {
+                String[] parts = s.split(";", 2);
+                String yExpr = parts[0].substring(2).trim();
+                if (parts.length > 1 && parts[1].startsWith("z=")) {
+                    String zExpr = parts[1].substring(2).trim();
+                    return isValidDualExpression(yExpr, zExpr);
+                }
+            }
+            s = s.substring(2).trim();
+        } else if (s.startsWith("z=") || s.startsWith("Z=")) {
+            s = s.substring(2).trim();
+        } else if (s.startsWith("f(x)=") || s.startsWith("F(X)=")) {
+            s = s.substring(5).trim();
+        } else if (s.startsWith("f(")) {
+            int eqIdx = s.indexOf('=');
+            if (eqIdx > 0) {
+                s = s.substring(eqIdx + 1).trim();
+            }
+        }
+        
+        if (s.isEmpty()) return false;
         try {
-            ExpressionEvaluator.evaluate(expression, 0.0);
+            ExpressionEvaluator.evaluate(s, 0.0);
             return true;
         } catch (Exception e) {
             return false;
         }
     }
 
-    private String stripExpressionPrefix(String expression) {
-        String s = expression.trim();
-        if (s.startsWith("y=") || s.startsWith("Y=")) {
-            return s.substring(2).trim();
+    private boolean isValidDualExpression(String yExpr, String zExpr) {
+        if (yExpr == null || yExpr.isEmpty()) return false;
+        if (zExpr == null || zExpr.isEmpty()) return false;
+        try {
+            ExpressionEvaluator.evaluate(yExpr, 0.0);
+            ExpressionEvaluator.evaluate(zExpr, 0.0);
+            return true;
+        } catch (Exception e) {
+            return false;
         }
-        if (s.startsWith("f(x)=") || s.startsWith("F(X)=")) {
-            return s.substring(5).trim();
-        }
-        if (s.startsWith("f(")) {
-            int eqIdx = s.indexOf('=');
-            if (eqIdx > 0) {
-                return s.substring(eqIdx + 1).trim();
-            }
-        }
-        return s;
     }
 }
