@@ -1,0 +1,21 @@
+{
+  "description": {
+    "translate": "enchantment.function_math.math_derivative"
+  },
+  "supported_items": "#geng:function_support",
+  "weight": 4,
+  "max_level": 2,
+  "min_cost": {
+    "base": 1,
+    "per_level_above_first": 10
+  },
+  "max_cost": {
+    "base": 6,
+    "per_level_above_first": 10
+  },
+  "anvil_cost": 1,
+  "slots": [
+    "any"
+  ],
+  "exclusive_set": "#geng:movement"
+}

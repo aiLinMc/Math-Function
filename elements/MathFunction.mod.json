@@ -1,0 +1,26 @@
+{
+  "_fv": 79,
+  "_type": "enchantment",
+  "definition": {
+    "name": "Math Function",
+    "supportedSlots": "any",
+    "weight": 4,
+    "anvilCost": 1,
+    "maxLevel": 2,
+    "damageModifier": 0,
+    "incompatibleEnchantments": [
+      {
+        "value": "#geng:movement"
+      }
+    ],
+    "supportedItems": [
+      {
+        "value": "TAG:geng:function_support"
+      }
+    ],
+    "isTreasureEnchantment": true,
+    "isCurse": false,
+    "canGenerateInLootTables": true,
+    "canVillagerTrade": true
+  }
+}

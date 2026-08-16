@@ -1,0 +1,7 @@
+{
+  "replace": false,
+  "values": [
+    "function_math:math_derivative",
+    "function_math:math_function"
+  ]
+}

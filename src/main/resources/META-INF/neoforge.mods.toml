@@ -1,0 +1,42 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="GNU General Public License version 3 (GPLv3)"
+
+[[mods]]
+modId="function_math"
+version="2.10"
+displayName="Function Math"
+displayURL="https://space.bilibili.com/3493284076849745"
+credits="Some were created by mod maker MCreator( https://mcreator.net/about ), and a little codes were written by TRAE AI."
+authors="aiLinMc"
+description="Maths! Function!"
+
+# Start of user code block mod configuration
+# End of user code block mod configuration
+
+[[dependencies.function_math]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1.176,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.function_math]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21.1]"
+    ordering="AFTER"
+    side="BOTH"
+
+
+
+
+[[mixins]]
+    config = "function_math.mixins.json"
+
+# Start of user code block custom mixins
+# End of user code block custom mixins
+
+
+# Start of user code block dependencies configuration
+# End of user code block dependencies configuration

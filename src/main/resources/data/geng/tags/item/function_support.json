@@ -1,0 +1,16 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:splash_potion",
+    "minecraft:tipped_arrow",
+    "minecraft:firework_rocket",
+    "minecraft:spectral_arrow",
+    "minecraft:lingering_potion",
+    "minecraft:ender_pearl",
+    "minecraft:trident",
+    "minecraft:flint_and_steel",
+    "minecraft:egg",
+    "minecraft:snowball",
+    "minecraft:arrow"
+  ]
+}

@@ -1,0 +1,258 @@
+{
+  "mod_elements": [
+    {
+      "name": "Fx",
+      "type": "command",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "fx",
+      "metadata": {
+        "files": [
+          "src/main/java/com/ailinmc/function_math/command/FxCommand.java"
+        ]
+      }
+    },
+    {
+      "name": "FunctionBlockStand",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "function_block_stand",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "arguments",
+            "type": "cmdcontext"
+          }
+        ],
+        "files": [
+          "src/main/java/com/ailinmc/function_math/procedures/FunctionBlockStandProcedure.java"
+        ]
+      }
+    },
+    {
+      "name": "FunctionBlockFloor",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "function_block_floor",
+      "metadata": {
+        "dependencies": [
+          {
+            "name": "arguments",
+            "type": "cmdcontext"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ],
+        "files": [
+          "src/main/java/com/ailinmc/function_math/procedures/FunctionBlockFloorProcedure.java"
+        ]
+      }
+    },
+    {
+      "name": "MathFunction",
+      "type": "enchantment",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "math_function",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/function_math/enchantment/math_function.json"
+        ]
+      }
+    },
+    {
+      "name": "AnvilScreen",
+      "type": "mixin",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "anvil_screen",
+      "metadata": {
+        "files": [
+          "src/main/java/com/ailinmc/function_math/mixin/AnvilScreenMixin.java"
+        ]
+      }
+    },
+    {
+      "name": "AnvilMenu",
+      "type": "mixin",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "anvil_menu",
+      "metadata": {
+        "files": [
+          "src/main/java/com/ailinmc/function_math/mixin/AnvilMenuMixin.java"
+        ]
+      }
+    },
+    {
+      "name": "FireworksFlying",
+      "type": "mixin",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "fireworks_flying",
+      "metadata": {
+        "files": [
+          "src/main/java/com/ailinmc/function_math/mixin/FireworksFlyingMixin.java"
+        ]
+      }
+    },
+    {
+      "name": "MathDerivative",
+      "type": "enchantment",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "math_derivative",
+      "metadata": {
+        "files": [
+          "src/main/resources/data/function_math/enchantment/math_derivative.json"
+        ]
+      }
+    }
+  ],
+  "variable_elements": [],
+  "sound_elements": [],
+  "tag_elements": {
+    "ENCHANTMENTS:minecraft:tradeable": [
+      "~CUSTOM:MathDerivative",
+      "~CUSTOM:MathFunction"
+    ],
+    "ENCHANTMENTS:minecraft:on_random_loot": [
+      "~CUSTOM:MathDerivative",
+      "~CUSTOM:MathFunction"
+    ],
+    "ENCHANTMENTS:minecraft:treasure": [
+      "~CUSTOM:MathDerivative",
+      "~CUSTOM:MathFunction"
+    ],
+    "ITEMS:geng:function_support": [
+      "Items.ARROW",
+      "Items.SPECTRAL_ARROW",
+      "Items.TIPPED_ARROW",
+      "Items.ENDER_PEARL",
+      "Items.TRIDENT",
+      "Items.FIREWORKS",
+      "Items.SPLASH_POTION",
+      "Items.LINGERING_POTION",
+      "Items.EGG",
+      "Items.FLINT_AND_STEEL",
+      "Items.SNOWBALL"
+    ],
+    "ENCHANTMENTS:geng:movement": [
+      "CUSTOM:MathFunction",
+      "CUSTOM:MathDerivative"
+    ]
+  },
+  "tab_element_order": {},
+  "language_map": {
+    "en_us": {
+      "function_math.result.success": "§aFunction image generated successfully!",
+      "function_math.result.expression": "§eExpression: §f%s",
+      "function_math.result.block": "§eBlock: §f%s",
+      "function_math.result.duration": "§eTime taken: §f%d ms",
+      "function_math.result.origin": "§eOrigin: §f(%s, %s, %s)",
+      "function_math.error.no_player": "§cCommand must be executed by a player",
+      "function_math.error.no_world": "§cCannot get world",
+      "function_math.error.parse_failed": "§cExpression parsing failed: %s",
+      "function_math.error.invalid_expression": "§cInvalid expression",
+      "function_math.error.no_valid_points": "§cNo valid function values, cannot generate image",
+      "enchantment.function_math.math_function": "Math Function",
+      "function_math.trident.stop_action": "Press Jump Key to stop flying",
+      "function_math.command.customfunction.add.reserved": "§cFunction name \u0027%s\u0027 is reserved",
+      "function_math.command.customfunction.add.invalid_name": "§cFunction name must start with a letter and contain only letters and digits",
+      "function_math.command.customfunction.add.exists": "§cFunction \u0027%s\u0027 already exists",
+      "function_math.command.customfunction.add.success": "§aCustom function added: %s(x) \u003d %s",
+      "function_math.command.customfunction.add.failed": "§cAdd failed",
+      "function_math.command.customfunction.get.success": "§6%s(x) \u003d %s",
+      "function_math.command.customfunction.eval.success": "§6%s(%s) \u003d %s",
+      "function_math.command.customfunction.remove.success": "§aCustom function removed: %s",
+      "function_math.command.customfunction.remove_all.empty": "§eNo custom functions to remove",
+      "function_math.command.customfunction.remove_all.success": "§aAll custom functions removed",
+      "function_math.command.customfunction.list.empty": "§eNo custom functions",
+      "function_math.command.customfunction.list.title": "§6Custom functions:",
+      "function_math.command.customfunction.list.item": "  %s(x) \u003d %s",
+      "function_math.command.customfunction.modify.success": "§aCustom function modified: %s(x) \u003d %s",
+      "function_math.command.customfunction.error.not_found": "§cCustom function not found: %s",
+      "function_math.command.customfunction.error.invalid_expression": "§cInvalid expression: %s",
+      "function_math.command.customfunction.error.recursion": "§cRecursive call!",
+      "enchantment.function_math.math_derivative": "Math Derivative"
+    },
+    "zh_cn": {
+      "function_math.result.success": "§a函数图像生成完成！",
+      "function_math.result.expression": "§e表达式: §f%s",
+      "function_math.result.block": "§e方块: §f%s",
+      "function_math.result.duration": "§e耗时: §f%d ms",
+      "function_math.result.origin": "§e原点坐标: §f(%s, %s, %s)",
+      "function_math.error.no_player": "§c命令必须由玩家执行",
+      "function_math.error.no_world": "§c无法获取世界",
+      "function_math.error.parse_failed": "§c表达式解析失败: %s",
+      "function_math.error.invalid_expression": "§c表达式无效",
+      "function_math.error.no_valid_points": "§c没有有效的函数值，无法生成图像",
+      "enchantment.function_math.math_function": "函数",
+      "function_math.trident.stop_action": "按 跳跃键 停止飞行",
+      "function_math.command.customfunction.add.reserved": "§c函数名 \u0027%s\u0027 是保留名称",
+      "function_math.command.customfunction.add.invalid_name": "§c函数名必须以英文字母开头，且只能包含英文字母和数字",
+      "function_math.command.customfunction.add.exists": "§c函数名 \u0027%s\u0027 已存在",
+      "function_math.command.customfunction.add.success": "§a已添加自定义函数: %s(x) \u003d %s",
+      "function_math.command.customfunction.add.failed": "§c添加失败",
+      "function_math.command.customfunction.get.success": "§6%s(x) \u003d %s",
+      "function_math.command.customfunction.eval.success": "§6%s(%s) \u003d %s",
+      "function_math.command.customfunction.remove.success": "§a已删除自定义函数: %s",
+      "function_math.command.customfunction.remove_all.empty": "§e没有自定义函数可删除",
+      "function_math.command.customfunction.remove_all.success": "§a已删除所有自定义函数",
+      "function_math.command.customfunction.list.empty": "§e没有自定义函数",
+      "function_math.command.customfunction.list.title": "§6自定义函数列表:",
+      "function_math.command.customfunction.list.item": "  %s(x) \u003d %s",
+      "function_math.command.customfunction.modify.success": "§a已修改自定义函数: %s(x) \u003d %s",
+      "function_math.command.customfunction.error.not_found": "§c未找到自定义函数: %s",
+      "function_math.command.customfunction.error.invalid_expression": "§c表达式无效: %s",
+      "function_math.command.customfunction.error.recursion": "§c循环调用！",
+      "enchantment.function_math.math_derivative": "导数"
+    }
+  },
+  "metadata": {
+    "files": [
+      "src/main/java/com/ailinmc/function_math/FunctionMathMod.java",
+      "src/main/resources/pack.mcmeta",
+      "src/main/resources/function_math.mixins.json",
+      "src/main/resources/META-INF/neoforge.mods.toml"
+    ]
+  },
+  "foldersRoot": {
+    "name": "~",
+    "children": []
+  },
+  "workspaceSettings": {
+    "modid": "function_math",
+    "modName": "Function Math",
+    "version": "2.10",
+    "description": "Maths! Function!",
+    "author": "aiLinMc",
+    "websiteURL": "https://space.bilibili.com/3493284076849745",
+    "license": "GNU General Public License version 3 (GPLv3)",
+    "serverSideOnly": false,
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "mcreatorDependencies": [],
+    "currentGenerator": "neoforge-1.21.1",
+    "credits": "Some were created by mod maker MCreator( https://mcreator.net/about ), and a little codes were written by TRAE AI.",
+    "modElementsPackage": "com.ailinmc.function_math"
+  },
+  "mcreatorVersion": 202500227613
+}
